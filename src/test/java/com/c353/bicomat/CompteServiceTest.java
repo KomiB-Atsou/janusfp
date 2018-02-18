@@ -6,6 +6,8 @@
 package com.c353.bicomat;
 
 import com.c353.bicomat.entities.Compte;
+import com.c353.bicomat.entities.en.FormeCompteEnum;
+import com.c353.bicomat.entities.en.TypeCompteEnum;
 import com.c353.bicomat.services.CompteService;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -57,6 +59,17 @@ public class CompteServiceTest {
         System.out.println("Hello!");
         compteService.hello();
         compteService.ajouter(new Compte());
+    }
+    
+    @Test
+    public void testCreationCompte(){
+        Compte caisseMaison = new Compte("Caisse Maison", 10000.0, TypeCompteEnum.TRESORERIE, FormeCompteEnum.PHYSIQUE, Boolean.TRUE);
+        compteService.ajouter(caisseMaison);
+    }
+    
+    @Test
+    public void testSoldeTousComptesPhysiques(){
+        System.out.println("Solde tous comptes physiques = " + compteService.getSoldeTousComptesPhysiques());
     }
     
 }

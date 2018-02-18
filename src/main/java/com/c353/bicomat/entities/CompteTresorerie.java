@@ -27,15 +27,18 @@ public class CompteTresorerie {
     @ManyToOne
     private Compte compteLogique;
 
-    private double solde;
+    private double soldeInitial;
+    
+    private double soldeCourant;
 
     public CompteTresorerie() {
     }
 
-    public CompteTresorerie(Compte comptePhysique, Compte compteLogique, double solde) {
+    public CompteTresorerie(Compte comptePhysique, Compte compteLogique, double soldeInitial) {
         this.comptePhysique = comptePhysique;
         this.compteLogique = compteLogique;
-        this.solde = solde;
+        this.soldeInitial = soldeInitial;
+        this.soldeCourant = this.soldeInitial;
     }
 
     public Compte getComptePhysique() {
@@ -54,12 +57,28 @@ public class CompteTresorerie {
         this.compteLogique = compteLogique;
     }
 
-    public double getSolde() {
-        return solde;
+    public double getSoldeInitial() {
+        return soldeInitial;
     }
 
-    public void setSolde(double solde) {
-        this.solde = solde;
+    public void setSoldeInitial(double soldeInitial) {
+        this.soldeInitial = soldeInitial;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public double getSoldeCourant() {
+        return soldeCourant;
+    }
+
+    public void setSoldeCourant(double soldeCourant) {
+        this.soldeCourant = soldeCourant;
     }
 
 }

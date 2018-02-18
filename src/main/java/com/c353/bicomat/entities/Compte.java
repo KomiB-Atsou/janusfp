@@ -11,10 +11,12 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.persistence.Temporal;
 
 /**
  *
@@ -39,8 +41,10 @@ public class Compte implements Serializable {
 
     private boolean mouvementable;
 
+    @Temporal(javax.persistence.TemporalType.DATE)
     private Date dateCreation;
 
+    @Temporal(javax.persistence.TemporalType.DATE)
     private Date dateDerniereMaj;
 
     private TypeCompteEnum typeCompte;
@@ -50,10 +54,10 @@ public class Compte implements Serializable {
     @ManyToOne
     private Compte compteParent;
 
-    @OneToMany(mappedBy = "compteParent")
+    @OneToMany(mappedBy = "compteParent", fetch = FetchType.EAGER)
     private List<Compte> comptesEnfants;
 
-    @OneToMany
+    @OneToMany(fetch = FetchType.EAGER)
     private List<CompteTresorerie> comptesTresorerie;
 
     public Compte(String code, String libelle, double soldeInitial,
@@ -74,9 +78,17 @@ public class Compte implements Serializable {
     public Compte() {
     }
 
-    Compte(String libelle, double soldeCourant) {
+    public Compte(String libelle, double soldeCourant) {
         this.libelle = libelle;
         this.soldeCourant = soldeCourant;
+    }
+
+    public Compte(String libelle, double soldeCourant, TypeCompteEnum type, FormeCompteEnum forme, boolean mouvementable) {
+        this.libelle = libelle;
+        this.soldeCourant = soldeCourant;
+        this.typeCompte = type;
+        this.formeCompte = forme;
+        this.mouvementable = mouvementable;
     }
 
     public Long getId() {
@@ -113,9 +125,10 @@ public class Compte implements Serializable {
 
     public double getSoldeCourant() {
         double l_soldeCourant = 0.0;
-        
+
         // Solde courant comme somme des soldes des comptes enfants
-        if (!this.getComptesEnfants().isEmpty()) {
+        // Si le compte n'a pas d'enfants, alors il est mouvementable
+        if (!this.isMouvementable()) {
             
             List<Compte> enfants = this.getComptesEnfants();
             for (Compte enfant : enfants) {
@@ -124,85 +137,89 @@ public class Compte implements Serializable {
         }else{
             l_soldeCourant = soldeCourant;
         }
-
         // Si ce compte est un compte phyique
         // Solde courant comme somme des comptes logiques en lien
         if (this.getFormeCompte() == FormeCompteEnum.PHYSIQUE) {
             List<CompteTresorerie> comptesTresorerie = this.getComptesTresorerie();
-            for (CompteTresorerie compteTreso : comptesTresorerie) {
-                if(compteTreso.getComptePhysique().getId() == this.getId()){
-                    l_soldeCourant += compteTreso.getSolde();
+            if (!comptesTresorerie.isEmpty()) {
+                for (CompteTresorerie compteTreso : comptesTresorerie) {
+                    if (compteTreso.getComptePhysique().getId() == this.getId()) {
+                        l_soldeCourant += compteTreso.getSoldeCourant();
+                    }
                 }
-                
             }
+//            else{
+//                l_soldeCourant = 0;
+//            }
+
         }
         // Si ce compte est un compte logique
         // Solde courant comme somme des comptes physiques en lien
-         if (this.getFormeCompte() == FormeCompteEnum.LOGIQUE) {
+        if (this.getFormeCompte() == FormeCompteEnum.LOGIQUE) {
             List<CompteTresorerie> comptesTresorerie = this.getComptesTresorerie();
             for (CompteTresorerie compteTreso : comptesTresorerie) {
-                if(compteTreso.getCompteLogique().getId() == this.getId()){
-                    l_soldeCourant += compteTreso.getSolde();
+                if (compteTreso.getCompteLogique().getId() == this.getId()) {
+                    l_soldeCourant += compteTreso.getSoldeCourant();
                 }
-                
+
             }
         }
 
         return l_soldeCourant;
     }
-    
-    public List<Compte> getComptesPhysiquesEnLien(){
+
+    public List<Compte> getComptesPhysiquesEnLien() {
         List<CompteTresorerie> comptesTresorerie = this.getComptesTresorerie();
         List<Compte> comptesPhysiquesEnLien = null;
-        if (this.getFormeCompte() == FormeCompteEnum.LOGIQUE){
+        if (this.getFormeCompte() == FormeCompteEnum.LOGIQUE) {
             for (CompteTresorerie compteTreso : comptesTresorerie) {
-                if(compteTreso.getCompteLogique().getId() == this.getId()){
+                if (compteTreso.getCompteLogique().getId() == this.getId()) {
                     comptesPhysiquesEnLien.add(compteTreso.getComptePhysique());
                 }
             }
         }
         return comptesPhysiquesEnLien;
     }
-    
-    public List<Compte> getComptesLogiquesEnLien(){
+
+    public List<Compte> getComptesLogiquesEnLien() {
         List<CompteTresorerie> comptesTresorerie = this.getComptesTresorerie();
         List<Compte> comptesLogiquesEnLien = null;
-        if (this.getFormeCompte() == FormeCompteEnum.PHYSIQUE){
+        if (this.getFormeCompte() == FormeCompteEnum.PHYSIQUE) {
             for (CompteTresorerie compteTreso : comptesTresorerie) {
-                if(compteTreso.getComptePhysique().getId() == this.getId()){
+                if (compteTreso.getComptePhysique().getId() == this.getId()) {
                     comptesLogiquesEnLien.add(compteTreso.getCompteLogique());
                 }
             }
         }
         return comptesLogiquesEnLien;
     }
-    
-    public double getSoldeCompteLogiqueEnLienAUnComptePhysique(Compte compteLogique){
+
+    public double getSoldeCompteLogiqueEnLienAUnComptePhysique(Compte compteLogique) {
         double solde = 0;
         // On suppose qu'il s'agit d'un compte physique
-       List<CompteTresorerie> comptesTresorerie = this.getComptesTresorerie();
-        if (this.getFormeCompte() == FormeCompteEnum.PHYSIQUE){
+        List<CompteTresorerie> comptesTresorerie = this.getComptesTresorerie();
+        if (this.getFormeCompte() == FormeCompteEnum.PHYSIQUE) {
             for (CompteTresorerie compteTreso : comptesTresorerie) {
-                if(compteTreso.getComptePhysique().getId() == this.getId() &&
-                        compteTreso.getCompteLogique().getId() == 
-                        compteLogique.getId()){
-                    solde = compteTreso.getSolde();
+                if (compteTreso.getComptePhysique().getId() == this.getId()
+                        && compteTreso.getCompteLogique().getId()
+                        == compteLogique.getId()) {
+                    solde = compteTreso.getSoldeCourant();
                 }
             }
         }
         return solde;
     }
-    
-     public double getSoldeComptePhyiqueEnLienAUnCompteLogique(Compte comptePhysique){
+
+    public double getSoldeComptePhyiqueEnLienAUnCompteLogique(Compte comptePhysique) {
         double solde = 0;
         // On suppose qu'il s'agit d'un compte physique
-       List<CompteTresorerie> comptesTresorerie = this.getComptesTresorerie();
-        if (this.getFormeCompte() == FormeCompteEnum.LOGIQUE){
+        List<CompteTresorerie> comptesTresorerie = this.getComptesTresorerie();
+        if (this.getFormeCompte() == FormeCompteEnum.LOGIQUE) {
             for (CompteTresorerie compteTreso : comptesTresorerie) {
-                if(compteTreso.getCompteLogique().getId() == this.getId() &&
-                        compteTreso.getComptePhysique().getId() == 
-                        comptePhysique.getId()){
-                    solde = compteTreso.getSolde();
+                if (compteTreso.getCompteLogique().getId() == this.getId()
+                        && compteTreso.getComptePhysique().getId()
+                        == comptePhysique.getId()) {
+                    solde = compteTreso.getSoldeCourant();
                 }
             }
         }
@@ -267,7 +284,11 @@ public class Compte implements Serializable {
     }
 
     public void setComptesEnfants(List<Compte> comptesEnfants) {
-        this.comptesEnfants = comptesEnfants;
+        // Si le compte n'est pas mouvementable, alors il a des enfants
+        if (!this.isMouvementable()) {
+            this.comptesEnfants = comptesEnfants;
+        }
+
     }
 
     public String getDescription() {
@@ -285,8 +306,8 @@ public class Compte implements Serializable {
     public void setComptesTresorerie(List<CompteTresorerie> comptesTresorerie) {
         this.comptesTresorerie = comptesTresorerie;
     }
-    
-    public String toString(){
+
+    public String toString() {
         return "Libellé : " + this.getLibelle() + ", Solde Initial : " + this.getSoldeInitial();
     }
 
