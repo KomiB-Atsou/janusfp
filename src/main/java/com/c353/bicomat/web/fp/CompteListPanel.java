@@ -2,7 +2,6 @@
 package com.c353.bicomat.web.fp;
 
 import com.c353.bicomat.entities.Compte;
-import com.c353.bicomat.entities.agency.CompteAgency;
 import com.c353.bicomat.services.ICompteService;
 import com.c353.bicomat.services.common.IService;
 import com.c353.bicomat.web.base.BaseListePanel;
@@ -19,7 +18,6 @@ import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.markup.repeater.Item;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
-import com.c353.bicomat.services.common.agency.ICompteAgencyDefaultService;
 
 
 public class CompteListPanel extends BaseListePanel<Compte, Integer> {

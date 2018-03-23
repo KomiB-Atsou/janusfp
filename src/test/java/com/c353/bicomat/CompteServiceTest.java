@@ -11,15 +11,13 @@ import com.c353.bicomat.entities.en.TypeCompteEnum;
 import com.c353.bicomat.services.CompteService;
 import org.junit.After;
 import org.junit.AfterClass;
+import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.test.SpringApplicationConfiguration;
-import org.springframework.boot.test.SpringApplicationContextLoader;
-import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 /**
@@ -54,22 +52,25 @@ public class CompteServiceTest {
     public void tearDown() {
     }
     
-    @Test
-    public void test(){
-        System.out.println("Hello!");
-        compteService.hello();
-        compteService.ajouter(new Compte());
-    }
+//    @Test
+//    public void test(){
+//        System.out.println("Hello!");
+//        compteService.hello();
+//        compteService.ajouter(new Compte());
+//    }
     
     @Test
     public void testCreationCompte(){
+        Long nbComptesAvantAjout;
+        nbComptesAvantAjout = compteService.count();
         Compte caisseMaison = new Compte("Caisse Maison", 10000.0, TypeCompteEnum.TRESORERIE, FormeCompteEnum.PHYSIQUE, Boolean.TRUE);
         compteService.ajouter(caisseMaison);
+        assertEquals(true, nbComptesAvantAjout+1 == compteService.count());
     }
     
-    @Test
-    public void testSoldeTousComptesPhysiques(){
-        System.out.println("Solde tous comptes physiques = " + compteService.getSoldeTousComptesPhysiques());
-    }
+//    @Test
+//    public void testSoldeTousComptesPhysiques(){
+//        System.out.println("Solde tous comptes physiques = " + compteService.getSoldeTousComptesPhysiques());
+//    }
     
 }

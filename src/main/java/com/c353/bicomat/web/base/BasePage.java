@@ -1,6 +1,5 @@
 package com.c353.bicomat.web.base;
 
-import com.c353.bicomat.web.banque.BanquePage;
 import com.c353.bicomat.web.fp.ComptePage;
 import org.apache.wicket.MarkupContainer;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
@@ -44,7 +43,6 @@ public abstract class BasePage<T> extends WebPage implements Serializable {
     }
 
     public void addMenu() {
-        add(new BookmarkablePageLink("banque", BanquePage.class));
         add(new BookmarkablePageLink("fp", ComptePage.class));
     }
 

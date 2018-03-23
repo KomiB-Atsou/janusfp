@@ -1,7 +1,6 @@
 package com.c353.bicomat.web.fp;
 
 import com.c353.bicomat.entities.Compte;
-import com.c353.bicomat.entities.agency.CompteAgency;
 import com.c353.bicomat.services.ICompteService;
 import com.c353.bicomat.web.base.BasePage;
 import org.wicketstuff.annotation.mount.MountPath;
@@ -9,7 +8,6 @@ import org.wicketstuff.annotation.mount.MountPath;
 import java.util.Optional;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
 import org.apache.wicket.spring.injection.annot.SpringBean;
-import com.c353.bicomat.services.common.agency.ICompteAgencyDefaultService;
 
 @MountPath("compte")
 public class ComptePage extends BasePage {
